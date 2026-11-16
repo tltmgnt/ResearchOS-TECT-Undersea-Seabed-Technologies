@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "name": "Synthetic seabed monitoring network",
+  "soundSpeedMps": 1500,
+  "absorptionDbKm": 1,
+  "noiseLowDb": 60,
+  "noiseHighDb": 70,
+  "requiredSnrDb": 10,
+  "seabedDepthM": 1000,
+  "gateway": "Buoy",
+  "disabled": [
+    "Relay"
+  ],
+  "source": "Fictional band-integrated levels using consistent acoustic pressure references. No field measurements.",
+  "review": "",
+  "nodes": [
+    {
+      "id": "Buoy",
+      "role": "gateway",
+      "xKm": 0,
+      "yKm": 0,
+      "depthM": 10,
+      "sourceLevelDb": 145
+    },
+    {
+      "id": "Relay",
+      "role": "relay",
+      "xKm": 2,
+      "yKm": 0,
+      "depthM": 500,
+      "sourceLevelDb": 145
+    },
+    {
+      "id": "Seabed A",
+      "role": "sensor",
+      "xKm": 4,
+      "yKm": 0,
+      "depthM": 1000,
+      "sourceLevelDb": 145
+    },
+    {
+      "id": "Vehicle",
+      "role": "vehicle",
+      "xKm": 1,
+      "yKm": 2,
+      "depthM": 200,
+      "sourceLevelDb": 140
+    }
+  ]
+}

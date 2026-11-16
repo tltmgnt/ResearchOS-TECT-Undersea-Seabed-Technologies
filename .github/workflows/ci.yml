@@ -1,0 +1,24 @@
+name: Undersea research checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --check model.mjs && node --check app.mjs && node --check cli.mjs
+      - run: npm test
+      - run: npm run demo
+      - run: node cli.mjs example.json /tmp/results.csv
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: undersea-studio-node-${{ matrix.node }}
+          path: dist/
