@@ -1,0 +1,11 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{validate,evaluate,distance,link,csv}from'../model.mjs';
+const node=(id,x,role='sensor',level=140)=>({id,role,xKm:x,yKm:0,depthM:100,sourceLevelDb:level});
+const base=()=>({version:1,name:'Test',soundSpeedMps:1500,absorptionDbKm:0,noiseLowDb:60,noiseHighDb:70,requiredSnrDb:10,seabedDepthM:1000,gateway:'G',disabled:['R'],source:'Synthetic',review:'',nodes:[node('G',0,'gateway'),node('R',1,'relay'),node('S',2)]});
+test('range includes depth in km',()=>{const a=node('A',0),b=node('B',0);b.depthM=1100;assert.equal(distance(a,b),1);});
+test('hand calculated 1km spherical loss and delay',()=>{const s=base(),r=link(s.nodes[1],s.nodes[0],s,60);assert.equal(r.lossDb,60);assert.equal(r.marginDb,10);assert.equal(r.propagationSeconds,2/3);});
+test('directed asymmetry reflects source level',()=>{const s=base();s.nodes[1].sourceLevelDb=100;assert.equal(link(s.nodes[1],s.nodes[0],s,60).feasible,false);assert.equal(link(s.nodes[0],s.nodes[1],s,60).feasible,true);});
+test('relay outage disconnects sensor at upper noise',()=>{const rows=evaluate(base());assert.equal(rows[1].nodes[2].hops,2);assert.equal(rows[2].nodes[2].gatewayReachable,false);});
+test('more noise does not create feasible links',()=>{const [a,b]=evaluate(base());assert.ok(a.feasibleLinks>=b.feasibleLinks);});
+test('disabled gateway makes every node unreachable',()=>{const s=base();s.disabled=['G'];assert.equal(evaluate(s)[2].reachableMonitoring,0);});
+test('invalid inputs and colocated nodes rejected',()=>{for(const change of [s=>s.soundSpeedMps=NaN,s=>s.noiseLowDb=100,s=>s.disabled=['missing'],s=>s.nodes[0].depthM=2000,s=>s.nodes[1].xKm=0]){const s=base();change(s);assert.throws(()=>validate(s));}});
+test('deterministic results and spreadsheet-safe export',()=>{const s=base();assert.deepEqual(evaluate(s),evaluate(s));s.nodes[2].id='=1+1';assert.ok(csv(evaluate(s)).includes("\"'=1+1\""));});
